@@ -34,3 +34,4 @@ knife4j:
     language: zh_cn
 chat:
   fileName: system-love
+  system_message: classpath:/prompts/${chat.fileName}.st
