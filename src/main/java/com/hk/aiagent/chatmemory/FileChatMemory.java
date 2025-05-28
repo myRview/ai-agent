@@ -5,8 +5,10 @@ import cn.hutool.core.io.IORuntimeException;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import com.hk.aiagent.constant.CommonConstant;
 import org.objenesis.strategy.StdInstantiatorStrategy;
 import org.springframework.ai.chat.messages.Message;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,9 +21,10 @@ import java.util.List;
  * @author huangkun
  * @date 2025/5/14 16:05
  */
+@Component
 public class FileChatMemory implements BaseChatMemory {
 
-    private static final String CHAT_MEMORY_DIR = "/chatmemory/";
+    private static final String CHAT_MEMORY_DIR = System.getProperty("user.dir") + CommonConstant.FILE_TEMP_PATH + "/chatmemory/";
     private static final String CHAT_MEMORY_FILE_SUFFIX = ".kryo";
     private static final Kryo kryo = new Kryo();
 
@@ -31,7 +34,8 @@ public class FileChatMemory implements BaseChatMemory {
     }
 
     private File getConversationFile(String conversationId) {
-        return FileUtil.file(System.getProperty("user.dir") + CHAT_MEMORY_DIR + conversationId + CHAT_MEMORY_FILE_SUFFIX);
+        FileUtil.mkdir(CHAT_MEMORY_DIR);
+        return FileUtil.file(CHAT_MEMORY_DIR + conversationId + CHAT_MEMORY_FILE_SUFFIX);
     }
 
     @Override
@@ -51,7 +55,7 @@ public class FileChatMemory implements BaseChatMemory {
                 Output output = new Output(new FileOutputStream(file))
         ) {
             kryo.writeObject(output, historyMessage);
-        } catch (IORuntimeException | FileNotFoundException e){
+        } catch (IORuntimeException | FileNotFoundException e) {
             throw new RuntimeException(e);
         }
     }

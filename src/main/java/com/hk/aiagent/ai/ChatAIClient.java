@@ -18,6 +18,7 @@ import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.image.*;
+import org.springframework.ai.tool.ToolCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -48,6 +49,9 @@ public class ChatAIClient {
 
     @Value("${chat.system-message}")
     private Resource systemResource;
+
+    @Autowired
+    private ToolCallback[] allTools;
 
     private static final String DEFAULT_MODEL = "qwen-vl-max-latest";
     @Autowired
@@ -88,9 +92,33 @@ public class ChatAIClient {
                             .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10)
                     )
                     .advisors(augmentationAdvisor)
+                    .tools(allTools)
                     .call().chatResponse();
             return response.getResult().getOutput().getText();
         } catch (Exception e) {
+            log.error("调用失败", e);
+            throw new BusinessException(ErrorCode.ERROR_SYSTEM, "调用失败");
+        }
+    }
+
+    public Flux<String> doChatPromptTemplateStream(String message, String conversantId, String... params) {
+
+        String systemMessage = getSystemMessage(params);
+
+        try {
+            Flux<String> flux = chatClient
+                    .prompt()
+                    .system(systemMessage)
+                    .user(message)
+                    .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, conversantId)
+                            .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10)
+                    )
+                    .advisors(augmentationAdvisor)
+                    .stream()
+                    .content();
+            return flux;
+        } catch (Exception e) {
+            log.error("调用失败", e);
             throw new BusinessException(ErrorCode.ERROR_SYSTEM, "调用失败");
         }
     }

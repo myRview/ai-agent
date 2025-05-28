@@ -35,3 +35,17 @@ knife4j:
 chat:
   fileName: system-love
   system_message: classpath:/prompts/${chat.fileName}.st
+search:
+  apiKey: xxxxxxxxxxxxx  #替换为自己   https://www.searchapi.io/ 的API key
+logging:
+  level:
+    org.springframework.ai: DEBUG
+tenxun:
+  cos:
+    config:
+      host: xxxxxxxxxxxx  #替换为自己的cos地址
+      secretId: xxxxxxxxxxxxx  #替换为自己的secretId
+      secretKey: xxxxxxxxxxxxx  #替换为自己的secretKey
+      bucket: xxxxxxxxxxxxx  #替换为自己的bucket
+      region: xxxxxxxxxxxxx  #替换为自己的region
+      timeOut: 60

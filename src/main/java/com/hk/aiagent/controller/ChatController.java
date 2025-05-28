@@ -6,8 +6,13 @@ import com.hk.aiagent.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Flux;
+
+import java.util.List;
 
 /**
  * @author huangkun
@@ -29,6 +34,17 @@ public class ChatController {
         return ResponseResult.success(message);
     }
 
+
+    @Operation(summary = "发送消息")
+    @PostMapping("/send/stream")
+    public ResponseEntity<Flux<String>> sendMessageStream(@RequestBody UserChatMessage userMessage) {
+        Flux<String> stringFlux = chatService.sendMessageStream(userMessage);
+        stringFlux.doOnNext(System.out::println).doOnComplete(() -> System.out.println("Complete")).subscribe();
+        return ResponseEntity.ok()
+                .contentType(MediaType.TEXT_EVENT_STREAM)
+                .body(stringFlux);
+    }
+
     @Operation(summary = "开始新的对话")
     @PostMapping("/start")
     public ResponseResult<?> startNewConversation() {
@@ -38,9 +54,9 @@ public class ChatController {
 
     @Operation(summary = "获取对话历史")
     @GetMapping("/history")
-    public ResponseResult<?> getChatHistory(@RequestParam String conversationId) {
-        chatService.getChatHistory(conversationId);
-        return ResponseResult.success();
+    public ResponseResult<?> getChatHistory(@RequestParam String conversationId,@RequestParam Integer lastN) {
+        List<UserChatMessage> chatHistory = chatService.getChatHistory(conversationId, lastN);
+        return ResponseResult.success(chatHistory);
     }
 
     @Operation(summary = "重置对话")

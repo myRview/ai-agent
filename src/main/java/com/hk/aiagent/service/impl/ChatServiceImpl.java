@@ -1,18 +1,24 @@
 package com.hk.aiagent.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.lang.UUID;
 import com.hk.aiagent.ai.ChatAIClient;
+import com.hk.aiagent.chatmemory.FileChatMemory;
 import com.hk.aiagent.model.dto.UserChatMessage;
 import com.hk.aiagent.service.ChatService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.model.Media;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Flux;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author huangkun
@@ -23,10 +29,18 @@ import java.util.List;
 public class ChatServiceImpl implements ChatService {
     @Autowired
     private ChatAIClient chatAIClient;
+    @Autowired
+    private FileChatMemory fileChatMemory;
     @Override
     public String sendMessage(UserChatMessage userMessage) {
-        String answer = chatAIClient.doChatPromptTemplate(userMessage.getMessage(), userMessage.getConversantId(),"小智","智者");
+        String answer = chatAIClient.doChatPromptTemplate(userMessage.getMessage(), userMessage.getConversantId());
         return answer;
+    }
+
+    @Override
+    public Flux<String> sendMessageStream(UserChatMessage userMessage) {
+        Flux<String> stringFlux = chatAIClient.doChatPromptTemplateStream(userMessage.getMessage(), userMessage.getConversantId());
+        return stringFlux;
     }
 
     @Override
@@ -38,8 +52,20 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public void getChatHistory(String conversationId) {
+    public List<UserChatMessage> getChatHistory(String conversationId, Integer lastN) {
+        List<UserChatMessage> chatMessages =new ArrayList<>();
+        List<Message> messages = fileChatMemory.get(conversationId, lastN);
+        if (CollectionUtil.isNotEmpty(messages)){
+            chatMessages = messages.stream().map(this::convertToUserChatMessage).collect(Collectors.toList());
+        }
+        return chatMessages;
+    }
 
+    //将message实体转换为UserChatMessage
+    private UserChatMessage convertToUserChatMessage(Message message){
+        UserChatMessage userChatMessage = new UserChatMessage();
+        userChatMessage.setMessage(message.getText());
+        return userChatMessage;
     }
 
     @Override
