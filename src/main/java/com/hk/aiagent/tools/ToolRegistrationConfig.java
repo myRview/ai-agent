@@ -28,6 +28,7 @@ public class ToolRegistrationConfig {
         ResourceDownloadTool downloadTool = new ResourceDownloadTool();
         WebScrapingTool webScrapingTool = new WebScrapingTool();
         PDFGenerationTool pdfGenerationTool = new PDFGenerationTool(tenXunCosManager);
-        return ToolCallbacks.from(operationTool, onlineSearchTool, downloadTool, webScrapingTool,pdfGenerationTool);
+        TerminateTool terminateTool = new TerminateTool();
+        return ToolCallbacks.from(operationTool, onlineSearchTool, downloadTool, webScrapingTool,pdfGenerationTool,terminateTool);
     }
 }

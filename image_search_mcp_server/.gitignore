@@ -1,11 +1,8 @@
 HELP.md
 target/
-!.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-test/
-temp/
-mcp-server-local.json
 
 ### STS ###
 .apt_generated
@@ -34,7 +31,3 @@ build/
 
 ### VS Code ###
 .vscode/
-
-
-###自定义###
-application-local.yml

@@ -1,0 +1,10 @@
+server:
+  port: 8005
+spring:
+  application:
+    name: image-search-mcp-server
+    profiles:
+      active: sse
+pexels:
+  url: https://api.pexels.com/v1/search
+  apiKey: xxxxxxxxxxx # Pexels API key

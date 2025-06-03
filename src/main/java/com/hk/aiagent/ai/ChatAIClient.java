@@ -19,6 +19,7 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.image.*;
 import org.springframework.ai.tool.ToolCallback;
+import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -50,8 +51,8 @@ public class ChatAIClient {
     @Value("${chat.system-message}")
     private Resource systemResource;
 
-    @Autowired
-    private ToolCallback[] allTools;
+//    @Autowired
+//    private ToolCallback[] allTools;
 
     private static final String DEFAULT_MODEL = "qwen-vl-max-latest";
     @Autowired
@@ -92,7 +93,7 @@ public class ChatAIClient {
                             .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10)
                     )
                     .advisors(augmentationAdvisor)
-                    .tools(allTools)
+//                    .tools(allTools)
                     .call().chatResponse();
             return response.getResult().getOutput().getText();
         } catch (Exception e) {
@@ -206,5 +207,23 @@ public class ChatAIClient {
 
         return variables;
     }
+
+    @Autowired
+    private ToolCallbackProvider toolCallbackProvider;
+
+    public String doChatWithMcp(String message, String chatId) {
+        ChatResponse response = chatClient
+                .prompt()
+                .user(message)
+                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))
+                .tools(toolCallbackProvider)
+                .call()
+                .chatResponse();
+        String content = response.getResult().getOutput().getText();
+        log.info("content: {}", content);
+        return content;
+    }
+
 
 }

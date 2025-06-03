@@ -6,6 +6,13 @@ spring:
   application:
     name: ai-agent
   ai:
+#    mcp:
+#      client:
+#        request-timeout: 30000
+#        sse:
+#          connections:
+#            server1:
+#              url: http://localhost:8005
     #大模型
     dashscope:
       api-key: xxxxxxxxxxxxxxxxxx  #替换为自己的API key
